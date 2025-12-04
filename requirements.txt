@@ -1,0 +1,16 @@
+sqlalchemy
+fastapi
+uvicorn
+pydantic
+requests
+python-multipart
+asyncpg
+python-dotenv
+python-jose
+authlib
+boto3
+cloudflare
+python-multipart
+botocore
+cloudinary
+python-dotenv
