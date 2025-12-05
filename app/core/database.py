@@ -11,7 +11,7 @@ from sqlalchemy import text
 # from app.models import *  # uncomment and import your models here
 
 # Path to your SSL certificate (use raw string or escape properly)
-ssl_cert_path = r"certificates\ca.pem"
+ssl_cert_path = "certificates/ca.pem"
 
 # Database URL
 DATABASE_URL = (
