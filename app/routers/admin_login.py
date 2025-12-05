@@ -87,6 +87,7 @@ async def google_callback(request: Request, db : AsyncSession = Depends(get_db))
         response['id'] = None
         response['message'] = "User Not an Admin"
     frontend_add = "http://localhost:5174" 
+    frontend_add = 'https://ecommerce-frontend-steel-theta.vercel.app'
     frontend_url = f'{frontend_add}/callback?token=scheduler&email={response["email"]}&name={response["full_name"]}&id={response["id"]}&message={response["message"]}'
     return RedirectResponse(frontend_url)
 

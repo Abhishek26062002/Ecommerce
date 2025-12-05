@@ -47,6 +47,7 @@ def login():
  
 frontend_add = "https://scheduler-frontend.bookzone.ai"
 frontend_add = "http://localhost:5173"
+frontend_add = 'https://ecommerce-frontend-steel-theta.vercel.app'
  
  
 @router.get("/callback")
@@ -121,5 +122,5 @@ async def google_callback(request: Request, db : AsyncSession = Depends(get_db))
 
     frontend_url = f"https://scheduler-frontend.bookzone.ai/callback?token=scheduler&email={response['email']}&name={response['full_name']}&id={response['id']}&message={response['message']}"
 
-    frontend_url = f"http://localhost:5173/callback?token=osa_123&email={response['email']}&name={response['full_name']}&id={response['id']}&message={response['message']}"
+    frontend_url = f"{frontend_add}/callback?token=osa_123&email={response['email']}&name={response['full_name']}&id={response['id']}&message={response['message']}"
     return RedirectResponse(frontend_url)
