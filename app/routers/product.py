@@ -342,3 +342,11 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"{file_type.upper()} file not found for this product",
         )
+        
+        
+        
+@router.get('/latest_products')
+async def get_latest_products(db: AsyncSession = Depends(get_db), limit: int = 10):
+    result = await db.execute(select(Product).order_by(Product.created_at.desc()).limit(limit))
+    products = result.scalars().all()
+    return products
