@@ -21,7 +21,7 @@ def valid_upload(f):
 @router.get("/get_all_products_infinite_scroll")
 async def get_products(
     db: AsyncSession = Depends(get_db),
-    limit: int = Query(2, ge=1),
+    limit: int = Query(50, ge=1),
     offset: int = Query(0, ge=0)
 ):
     # Fetch paginated products
