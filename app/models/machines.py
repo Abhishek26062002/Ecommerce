@@ -1,5 +1,5 @@
 from app.core.database import Base
-from sqlalchemy import Column, String, Text, Boolean, Integer, Float
+from sqlalchemy import Column, String, Text, Boolean, Integer, Float, ARRAY
 from sqlalchemy.sql.sqltypes import DateTime
 from datetime import datetime
 
@@ -12,7 +12,7 @@ class Machine(Base):
     description = Column(Text, nullable=True)
     brand = Column(String(100), nullable=True)
     machine_type = Column(String(100), nullable=True)
-    images_urls = Column(String, nullable=True)
+    images_urls = Column(ARRAY(String), nullable=True)
     price = Column(Float, nullable=False)
     discount_price = Column(Float, nullable=True)
     color = Column(String(50), nullable=True)
