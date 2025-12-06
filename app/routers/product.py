@@ -48,6 +48,13 @@ async def get_products(db: AsyncSession = Depends(get_db)):
     products = result.scalars().all()
     return products
 
+        
+@router.get('/latest_products')
+async def get_latest_products(db: AsyncSession = Depends(get_db), limit: int = 10):
+    result = await db.execute(select(Product).order_by(Product.date_created.desc()).limit(limit))
+    products = result.scalars().all()
+    return products
+
 
 @router.get("/{product_id}")
 async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
@@ -344,9 +351,3 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
         )
         
         
-        
-@router.get('/latest_products')
-async def get_latest_products(db: AsyncSession = Depends(get_db), limit: int = 10):
-    result = await db.execute(select(Product).order_by(Product.created_at.desc()).limit(limit))
-    products = result.scalars().all()
-    return products
