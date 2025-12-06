@@ -128,3 +128,17 @@ async def update_machine(
     await db.refresh(machine)
 
     return {"message": "Machine updated successfully", "machine": machine}
+
+
+
+@router.delete("/delete_machine/{machine_id}")
+async def delete_machine(machine_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Machine).where(Machine.machine_id == machine_id))
+    machine = result.scalars().first()
+    if not machine:
+        raise HTTPException(status_code=404, detail="Machine not found")
+
+    await db.delete(machine)
+    await db.commit()
+
+    return {"message": "Machine deleted successfully"}
