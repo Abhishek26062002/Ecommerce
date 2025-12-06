@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Form, File, UploadFile
 from app.models.machines import Machine
 from app.core.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +24,48 @@ async def get_machine(machine_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Machine not found")
     return machine
 
+@router.post("/add_machine")
+async def add_machine(
+    machine_id: str = Form(...),
+    name: str = Form(...),
+    price: float = Form(...),
+    description: str = Form(None),
+    brand: str = Form(None),
+    machine_type: str = Form(None),
+    images : List[UploadFile] = File(...),
+    discount_price: float = Form(None),
+    color: str = Form(None),
+    size: str = Form(None),
+    stock_count: int = Form(None),
+    db: AsyncSession = Depends(get_db)
+):
 
-# @router.post("/add_machine")
-# async def add_machine( db: AsyncSession = Depends(get_db)):
-    
+    # Check duplicate machine_id
+    existing = await db.execute(select(Machine).where(Machine.machine_id == machine_id))
+    if existing.scalars().first():
+        raise HTTPException(status_code=400, detail="Machine ID already exists")
+    # Upload images to Cloudinary
+    images_urls = []
+    for image in images:
+        upload_result = await upload_file_to_cloudinary(image)
+        if upload_result:
+            images_urls.append(upload_result["secure_url"])
+    new_machine = Machine(
+        machine_id=machine_id,
+        name=name,
+        description=description,
+        brand=brand,
+        machine_type=machine_type,
+        images_urls=images_urls,
+        price=price,
+        discount_price=discount_price,
+        color=color,
+        size=size,
+        stock_count=stock_count,
+    )
+
+    db.add(new_machine)
+    await db.commit()
+    await db.refresh(new_machine)
+
+    return {"message": "Machine added successfully", "machine": new_machine}
