@@ -115,6 +115,9 @@ async def update_machine(
                 print(f"Uploaded image URL: {upload_result['secure_url']}")
                 images_urls.append(upload_result["secure_url"])
         machine.images_urls = images_urls
+    else :
+        if image_urls is not None:
+            machine.images_urls = image_urls
     if discount_price is not None:
         machine.discount_price = discount_price
     if color is not None:

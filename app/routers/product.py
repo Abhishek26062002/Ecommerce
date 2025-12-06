@@ -295,6 +295,9 @@ async def update_product(product_id: str,
                 print(f"Uploaded image URL: {upload_result['secure_url']}")
                 images_urls.append(upload_result["secure_url"])
         product.images_urls = images_urls
+    else :
+        if image_urls is not None:
+            product.images_urls = image_urls
 
     # Handle DST upload
     if valid_upload(dst):
