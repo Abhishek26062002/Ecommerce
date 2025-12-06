@@ -18,7 +18,7 @@ def valid_upload(f):
 
 
 
-@router.get("/get_all_products")
+@router.get("/get_all_products_infinite_scroll")
 async def get_products(
     db: AsyncSession = Depends(get_db),
     limit: int = Query(10, ge=1),
