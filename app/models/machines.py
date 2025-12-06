@@ -12,6 +12,7 @@ class Machine(Base):
     description = Column(Text, nullable=True)
     brand = Column(String(100), nullable=True)
     machine_type = Column(String(100), nullable=True)
+    images_urls = Column(String, nullable=True)
     price = Column(float, nullable=False)
     discount_price = Column(float, nullable=True)
     color = Column(String(50), nullable=True)

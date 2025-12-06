@@ -4,8 +4,7 @@ from app.core.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
-from app.schemas.machines import MachineSchema
-
+from app.services.cloudinary import upload_file_to_cloudinary
 
 
 router = APIRouter(prefix="/machines", tags=["machines"])
@@ -26,9 +25,6 @@ async def get_machine(machine_id: str, db: AsyncSession = Depends(get_db)):
     return machine
 
 
-@router.post("/add_machine")
-async def add_machine(machine: Machine, db: AsyncSession = Depends(get_db)):
-    db.add(machine)
-    await db.commit()
-    await db.refresh(machine)
-    return machine
+# @router.post("/add_machine")
+# async def add_machine( db: AsyncSession = Depends(get_db)):
+    
