@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Form, UploadFile, File, Query
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.product import Product
@@ -18,11 +19,34 @@ def valid_upload(f):
 
 
 @router.get("/get_all_products")
+async def get_products(
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(10, ge=1),
+    offset: int = Query(0, ge=0)
+):
+    # Fetch paginated products
+    result = await db.execute(
+        select(Product).offset(offset).limit(limit)
+    )
+    products = result.scalars().all()
+
+    # Get total count for frontend decision making
+    total_query = await db.execute(select(func.count(Product.id)))
+    total = total_query.scalar()
+
+    return {
+        "products": products,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "hasMore": offset + limit < total
+    }
+
+@router.get("/get_all_products")
 async def get_products(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Product))
     products = result.scalars().all()
     return products
-
 
 
 @router.get("/{product_id}")

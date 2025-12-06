@@ -1,1 +1,1 @@
-select * from orders 
+alter table product add column date_created timestamp not null default now()

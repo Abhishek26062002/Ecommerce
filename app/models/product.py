@@ -2,6 +2,8 @@ from app.core.database import Base
 from sqlalchemy import Column, String, Float, Text, Boolean, Integer, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from sqlalchemy.sql.sqltypes import DateTime
+from datetime import datetime
 
 
 
@@ -25,5 +27,5 @@ class Product(Base):
     dst = Column(String(100), nullable=True)
     jef = Column(String(100), nullable=True)
     stock_count = Column(Integer, nullable=True)
-    
+    date_created = Column(DateTime, default=datetime.now(), nullable=False)
     
