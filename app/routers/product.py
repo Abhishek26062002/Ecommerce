@@ -346,16 +346,16 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
             detail="Product not found",
         )
     
-    if file_type == "dst" and product.dst:
-        dst_url = await generate_r2_download_url(product.dst, expiry)
-        return {"dst_url": dst_url}
-    elif file_type == "jef" and product.jef:
-        jef_url = await generate_r2_download_url(product.jef, expiry)
-        return {"jef_url": jef_url}
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{file_type.upper()} file not found for this product",
-        )
-        
+    urls = {}
+    if product.downloadable_files:
+        downloadable_files = json.loads(product.downloadable_files)
+        if file_type in downloadable_files:
+            file_url = downloadable_files[file_type]
+            download_url = await generate_r2_download_url(file_url, expiry)
+            urls[file_type] = download_url
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{file_type} not found for this product",
+            )
         
