@@ -358,4 +358,4 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"{file_type} not found for this product",
             )
-        
+    return urls
