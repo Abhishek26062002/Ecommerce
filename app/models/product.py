@@ -24,8 +24,9 @@ class Product(Base):
     machine_type = Column(String(100), nullable=True)
     color = Column(String(50), nullable=True)
     size = Column(String(50), nullable=True)
-    dst = Column(String(100), nullable=True)
-    jef = Column(String(100), nullable=True)
+    # dst = Column(String(100), nullable=True)
+    # jef = Column(String(100), nullable=True)
     stock_count = Column(Integer, nullable=True)
     date_created = Column(DateTime, default=datetime.now(), nullable=False)
+    downloadable_files = Column(String, nullable=True)  
     

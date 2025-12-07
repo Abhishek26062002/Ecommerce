@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form, UploadFile, File, Query
+from itertools import product
+from fastapi import APIRouter, Depends, HTTPException, status, Form, UploadFile, File, Query, Request
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
@@ -9,6 +10,7 @@ from app.services.cloudinary import upload_file_to_cloudinary
 from app.services.r2_client import upload_to_r2, generate_r2_download_url, delete_from_r2
 from app.models.orderitems import OrderItem
 from app.models.orders import Order
+import json
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -33,9 +35,15 @@ async def get_products(
     # Get total count for frontend decision making
     total_query = await db.execute(select(func.count(Product.id)))
     total = total_query.scalar()
+    product_details = [product.__dict__ for product in products]
+    for product in product_details:
+        if product.get("downloadable_files"):
+            product["machine_type"] = list(json.loads(product["downloadable_files"]).keys())
+            del product["downloadable_files"]
 
+    print(product_details)
     return {
-        "products": products,
+        "products": product_details,
         "total": total,
         "limit": limit,
         "offset": offset,
@@ -65,7 +73,11 @@ async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found",
         )
-    return product  
+    product_dict = product.__dict__
+    if product.downloadable_files:
+        product_dict["machine_type"] = list(json.loads(product.downloadable_files).keys())
+        del product_dict["downloadable_files"]
+    return product_dict  
 
 
 
@@ -91,7 +103,8 @@ async def get_products_by_sub_category(category: str, sub_category_name: str, db
 
 
 @router.post("/add_product")
-async def add_product(name : str = Form(...),
+async def add_product(request: Request,
+                      name : str = Form(...),
                       description : str = Form(None),
                       price : float = Form(...),
                       discount_price : float = Form(None),
@@ -100,12 +113,7 @@ async def add_product(name : str = Form(...),
                       category : str = Form(None),
                       brand : str = Form(None),
                       machine_type : str = Form(None),
-                      color : str = Form(None),
-                      size : str = Form(None),
-                      stock_count : int = Form(None),
                       images : List[UploadFile] = File(...),
-                      dst: Optional[Union[UploadFile, str]] = File(None),
-                      jef: Optional[Union[UploadFile, str]] = File(None),
                       db: AsyncSession = Depends(get_db)):
     
         # Upload images first
@@ -114,32 +122,34 @@ async def add_product(name : str = Form(...),
         upload_result = await upload_file_to_cloudinary(image)
         if upload_result:
             images_urls.append(upload_result["secure_url"])
-    print("DST TYPE:", type(dst))
-    print("UploadFile TYPE:", UploadFile)
-    print("isinstance(dst, UploadFile):", isinstance(dst, UploadFile))
+    form = await request.form()
+    print("Form items:", list(form.items()))
 
+    downloadable_files = {}
 
-    # Now R2 uploads are safe
-    if valid_upload(dst):
-        print("Uploading DST file to R2")
-        dst_filename = await upload_to_r2(dst)
-        
-    else:
-        print("No valid DST file provided")
-        dst_filename = None
+    for key, value in form.items():
 
-    if valid_upload(jef):
-        print("Uploading JEF file to R2")
-        jef_filename = await upload_to_r2(jef)
-    else:
-        print("No valid JEF file provided")
-        jef_filename = None
+        # Skip normal fields
+        if key in ["name", "description", "price", "discount_price", "in_stock",
+                "sub_category", "category", "brand", "machine_type", "color", "size", 
+                "stock_count", "images"]:
+            continue
 
-    
+        # Detect files even if type mismatch between Starlette/FastAPI UploadFile
+        if hasattr(value, "filename") and value.filename:
+            downloadable_files[key] = value
 
-    
-        
-    
+    print(f"Detected downloadable files: {downloadable_files.keys()}")
+
+    downloadable_files_urls = {}
+
+    for key, value in downloadable_files.items():
+        print(f"Uploading downloadable file: {key}")
+        file_url = await upload_to_r2(value)
+        downloadable_files_urls[key] = file_url
+
+    print("Downloadable files URLs:", downloadable_files_urls)
+
     new_product = Product(
         name=name,
         description=description,
@@ -151,11 +161,7 @@ async def add_product(name : str = Form(...),
         category=category,
         brand=brand,
         machine_type=machine_type,
-        color=color,
-        size=size,
-        dst=dst_filename if dst else None,
-        jef=jef_filename if jef else None,
-        stock_count=stock_count
+        downloadable_files=json.dumps(downloadable_files_urls) if downloadable_files_urls else None,
     )
     db.add(new_product)
     await db.commit()
@@ -175,11 +181,9 @@ async def delete_product(product_id: str, db: AsyncSession = Depends(get_db)):
         )
     
     # Delete associated files from R2
-    if product.dst:
-        await delete_from_r2(product.dst)
-    if product.jef:
-        await delete_from_r2(product.jef)
-    
+    if product.downloadable_files:
+        for file_url in json.loads(product.downloadable_files).values():
+            await delete_from_r2(file_url)
     await db.delete(product)
     await db.commit()
     return {"detail": "Product deleted successfully"}
@@ -214,24 +218,20 @@ async def generate_r2_url(product_id: str, expiry: int = 3600, db: AsyncSession 
 
 
 @router.put("/edit_product/{product_id}")
-async def update_product(product_id: str,
-                         name : Optional[str] = Form(None),
-                         description : Optional[str] = Form(None),
-                         price : Optional[float] = Form(None),
-                         discount_price : Optional[float] = Form(None),
-                         in_stock : Optional[bool] = Form(None),
-                         sub_category : Optional[str] = Form(None),
-                         category : Optional[str] = Form(None),
-                         brand : Optional[str] = Form(None),
-                         machine_type : Optional[str] = Form(None),
-                         color : Optional[str] = Form(None),
-                         size : Optional[str] = Form(None),
-                         stock_count : Optional[int] = Form(None),
-                         images : List[UploadFile] = File(None),
-                         image_urls : List[str] = Form(None),
-                         dst: Optional[Union[UploadFile, str]] = File(None),
-                         jef: Optional[Union[UploadFile, str]] = File(None),
-                         db: AsyncSession = Depends(get_db)):
+async def update_product(request: Request,
+                        product_id: str,
+                      name : str = Form(...),
+                      description : str = Form(None),
+                      price : float = Form(...),
+                      discount_price : float = Form(None),
+                      in_stock : bool = Form(True),
+                      sub_category : str = Form(None),
+                      category : str = Form(None),
+                      brand : str = Form(None),
+                      machine_type : str = Form(None),
+                      image_urls : List[str] = Form(None),
+                      images : List[UploadFile] = File(None),
+                      db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalars().first()
     print("Fetched product:", product)
@@ -252,12 +252,7 @@ async def update_product(product_id: str,
         "category": category,
         "brand": brand,
         "machine_type": machine_type,
-        "color": color,
-        "size": size,
-        "stock_count": stock_count,
         "images": images,
-        "dst": dst,
-        "jef": jef
     })
     if name is not None:
         product.name = name
@@ -277,12 +272,6 @@ async def update_product(product_id: str,
         product.brand = brand
     if machine_type is not None:
         product.machine_type = machine_type
-    if color is not None:
-        product.color = color
-    if size is not None:
-        product.size = size
-    if stock_count is not None:
-        product.stock_count = stock_count
 
     # Handle image uploads
     if images is not None:
@@ -298,24 +287,40 @@ async def update_product(product_id: str,
     else :
         if image_urls is not None:
             product.images_urls = image_urls
+    form = await request.form()
+    print("Form items:", list(form.items()))
 
-    # Handle DST upload
-    if valid_upload(dst):
+    downloadable_files = {}
 
-        print("Uploading DST file to R2")
-        dst_filename = await upload_to_r2(dst)
-        if product.dst:
-            await delete_from_r2(product.dst)
-        print(f"Uploaded DST file: {dst_filename}")
+    for key, value in form.items():
 
-        product.dst = dst_filename
-    if valid_upload(jef):
-        print("Uploading JEF file to R2")
-        jef_filename = await upload_to_r2(jef)
-        if product.jef:
-            await delete_from_r2(product.jef)
-        print(f"Uploaded JEF file: {jef_filename}")
-        product.jef = jef_filename
+        # Skip normal fields
+        if key in ["name", "description", "price", "discount_price", "in_stock",
+                "sub_category", "category", "brand", "machine_type", "color", "size", 
+                "stock_count", "images"]:
+            continue
+
+        # Detect files even if type mismatch between Starlette/FastAPI UploadFile
+        if hasattr(value, "filename") and value.filename:
+            downloadable_files[key] = value
+
+    print(f"Detected downloadable files: {downloadable_files.keys()}")
+
+    downloadable_files_urls = {}
+
+    for key, value in downloadable_files.items():
+        print(f"Uploading downloadable file: {key}")
+        file_url = await upload_to_r2(value)
+        downloadable_files_urls[key] = file_url
+    print("Existing downloadable files:", product.downloadable_files)
+    print("Downloadable files URLs:", downloadable_files_urls)
+    if downloadable_files_urls:
+        total_downloadable_files = {}
+        if product.downloadable_files:
+            total_downloadable_files = json.loads(product.downloadable_files)
+        total_downloadable_files.update(downloadable_files_urls)
+        product.downloadable_files = json.dumps(total_downloadable_files)
+
     await db.commit()
     await db.refresh(product)
     return product
