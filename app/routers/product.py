@@ -352,7 +352,7 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
         if file_type in downloadable_files:
             file_url = downloadable_files[file_type]
             download_url = await generate_r2_download_url(file_url, expiry)
-            urls[file_type] = download_url
+            urls[f'{file_type}_url'] = download_url
         else:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
