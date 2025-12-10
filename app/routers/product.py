@@ -35,13 +35,7 @@ async def get_products(
     # Get total count for frontend decision making
     total_query = await db.execute(select(func.count(Product.id)))
     total = total_query.scalar()
-    product_details = [product.__dict__ for product in products]
-    for product in product_details:
-        if product.get("downloadable_files"):
-            product["machine_type"] = list(json.loads(product["downloadable_files"]).keys())
-            del product["downloadable_files"]
-
-    print(product_details)
+    product_details = [product for product in products]
     return {
         "products": product_details,
         "total": total,
@@ -61,6 +55,7 @@ async def get_products(db: AsyncSession = Depends(get_db)):
 async def get_latest_products(db: AsyncSession = Depends(get_db), limit: int = 10):
     result = await db.execute(select(Product).order_by(Product.date_created.desc()).limit(limit))
     products = result.scalars().all()
+    
     return products
 
 
@@ -73,11 +68,7 @@ async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found",
         )
-    product_dict = product.__dict__
-    if product.downloadable_files:
-        product_dict["machine_type"] = list(json.loads(product.downloadable_files).keys())
-        del product_dict["downloadable_files"]
-    return product_dict  
+    return product  
 
 
 
@@ -112,7 +103,6 @@ async def add_product(request: Request,
                       sub_category : str = Form(None),
                       category : str = Form(None),
                       brand : str = Form(None),
-                      machine_type : str = Form(None),
                       images : List[UploadFile] = File(...),
                       db: AsyncSession = Depends(get_db)):
     
@@ -149,7 +139,9 @@ async def add_product(request: Request,
         downloadable_files_urls[key] = file_url
 
     print("Downloadable files URLs:", downloadable_files_urls)
-
+    machine_type = None
+    if downloadable_files_urls:
+        machine_type = list(downloadable_files_urls.keys())
     new_product = Product(
         name=name,
         description=description,

@@ -88,11 +88,14 @@ async def add_items_to_cart(req : AddItemsSchema, db: AsyncSession = Depends(get
 
 @router.delete("/remove_item/{item_id}")
 async def remove_item_from_cart(item_id: str, db: AsyncSession = Depends(get_db)):
+    print("Removing item with ID:", item_id)
     result = await db.execute(select(CartItem).where(CartItem.product_id == item_id))
     item = result.scalars().first()
+    print(item)
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart item not found")
     await db.delete(item)
+    print(f"Item {item_id} deleted")
     await db.commit()
 
 
@@ -118,6 +121,7 @@ async def get_all_products_from_cart(user_id: str, db: AsyncSession = Depends(ge
             "total_price": item.total_price,
             "machine_type": product.machine_type
         })
+    print("data:", data)
     return data
 
 

@@ -67,11 +67,14 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
             select(Order).where(Order.user_id == user_id, Order.status == "paid")
         )
         orders = result.scalars().all()
+        print("orders", orders)
         order_items_result = await db.execute(
             select(OrderItem).where(OrderItem.order_id.in_([order.id for order in orders]))
         )
+        
         order_items = order_items_result.scalars().all()
         orders_items_with_product_details = []
+        print('order_items', order_items)
         detailed_items = []
         for order in orders:
             items = [item for item in order_items if item.order_id == order.id]
@@ -81,6 +84,7 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
                     select(Product).where(Product.id == item.product_id)
                 )
                 product = product_result.scalars().first()
+                print("True")
                 # detailed_items.append({
                 #     "order_item": item,
                 #     "product": product
@@ -104,6 +108,7 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
 
         return detailed_items
     except Exception as e:
+        print(f"Error fetching orders: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

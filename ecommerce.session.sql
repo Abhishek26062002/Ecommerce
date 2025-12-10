@@ -3,5 +3,7 @@
 -- drop table machines
 -- ALTER TABLE products
 -- ADD COLUMN downloadable_files VARCHAR;
-drop table wishlist_items, cart_items, carts, wishlists;
+-- drop table  users;
+-- select * from orders
 -- select * FROM products;
+select * from cart_items;
