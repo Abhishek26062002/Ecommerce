@@ -39,7 +39,7 @@ async def add_machine(name : str = Form(None),
         machine_id = f'Embrioding_machine_{str(uuid.uuid4())}'
         images_urls = []
         for image in images:
-            upload_result = await upload_file_to_cloudinary(image, folder="embroidery_machines")
+            upload_result = await upload_file_to_cloudinary(image)
             images_urls.append(upload_result['secure_url'])
         new_machine = EmbroideryMachine(
             machine_id=machine_id,
@@ -143,7 +143,7 @@ async def update_machine(machine_id: str,
             if images:
                 images_urls = []
                 for image in images:
-                    upload_result = await upload_file_to_cloudinary(image, folder="embroidery_machines")
+                    upload_result = await upload_file_to_cloudinary(image)
                     images_urls.append(upload_result['secure_url'])
                 machine.images_urls = images_urls
             if needle_count is not None:
