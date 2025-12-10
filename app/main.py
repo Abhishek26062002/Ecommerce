@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from app.core.database import init_models
 
-from app.routers import google_login, admin, product, cart, wishlist, payment_integration, customer, admin_login, orders, machines
+from app.routers import google_login, admin, product, cart, wishlist, payment_integration, customer, admin_login, orders, machines, Embriodery_machines
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -33,3 +33,4 @@ app.include_router(customer.router)
 app.include_router(admin_login.router)
 app.include_router(orders.router)
 app.include_router(machines.router)
+app.include_router(Embriodery_machines.router)
