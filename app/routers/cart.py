@@ -62,6 +62,7 @@ async def get_cart_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/{user_id}/add_items", status_code=status.HTTP_201_CREATED)
 async def add_items_to_cart(req : AddItemsSchema, db: AsyncSession = Depends(get_db)):
+    print(req)
     result = await db.execute(select(Cart).where(Cart.user_id == req.user_id))
     cart = result.scalars().first()
     
