@@ -64,23 +64,26 @@ async def get_cart_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
 async def add_items_to_cart(req : AddItemsSchema, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Cart).where(Cart.user_id == req.user_id))
     cart = result.scalars().first()
+    
     if not cart:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart not found for the user")
+    
     for item in req.items:
         product = await db.execute(select(Product).where(Product.id == item.product_id))
         product_instance = product.scalars().first()
         if not product_instance:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Product with ID {item.product_id} not found")
         unit_price = product_instance.price
-        total_price = unit_price * item.quantity
+        total_price = unit_price * 1
         cart_item = CartItem(
             cart_id=cart.user_id,
             product_id=item.product_id,
             machine_type=item.machine_type,
-            quantity=item.quantity,
+            quantity=1,
             unit_price=item.unit_price,
             total_price=total_price
         )
+        
         db.add(cart_item)
     await db.commit()
     return {"message": "Items added to cart successfully"}
