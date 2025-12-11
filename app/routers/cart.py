@@ -78,7 +78,7 @@ async def add_items_to_cart(req : AddItemsSchema, db: AsyncSession = Depends(get
         cart_item_in_db = await db.execute(select(CartItem).where(CartItem.cart_id == cart.user_id, CartItem.product_id == item.product_id, CartItem.machine_type == item.selected_format))
         cart_item_in_db = cart_item_in_db.scalars().first()
         if cart_item_in_db:
-            return {"message": f"Item with Product ID {item.product_id} and format {item.selected_format} already in cart"}
+            continue
             
         unit_price = product_instance.price
         total_price = unit_price * item.quantity
