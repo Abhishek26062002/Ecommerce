@@ -5,6 +5,6 @@ from typing import List
 
 class CartItemSchema(BaseModel):
     product_id: str
-    machine_type: List[str]
+    selected_format: str
     quantity: int
     unit_price: float
