@@ -28,7 +28,7 @@ async def get_products(
 ):
     # Fetch paginated products
     result = await db.execute(
-        select(Product).offset(offset).limit(limit)
+        select(Product).order_by(Product.date_created.desc()).offset(offset).limit(limit)
     )
     products = result.scalars().all()
 
@@ -220,7 +220,7 @@ async def update_product(request: Request,
                       sub_category : str = Form(None),
                       category : str = Form(None),
                       brand : str = Form(None),
-                      machine_type : str = Form(None),
+                      machine_type : List[str] = Form(None),
                       image_urls : List[str] = Form(None),
                       images : List[UploadFile] = File(None),
                       db: AsyncSession = Depends(get_db)):
@@ -262,8 +262,8 @@ async def update_product(request: Request,
         product.category = category
     if brand is not None:
         product.brand = brand
-    if machine_type is not None:
-        product.machine_type = machine_type
+    # if machine_type is not None:
+    #     product.machine_type = machine_type
 
     # Handle image uploads
     if images is not None:
@@ -312,13 +312,15 @@ async def update_product(request: Request,
             total_downloadable_files = json.loads(product.downloadable_files)
         total_downloadable_files.update(downloadable_files_urls)
         product.downloadable_files = json.dumps(total_downloadable_files)
-
+        product.machine_type = list(total_downloadable_files.keys())
+    
+    
     await db.commit()
     await db.refresh(product)
     return product
 
-@router.get("/product_download_urls/{payment_id}/{file_type}")
-async def get_product_download_urls(payment_id: str, file_type: str, expiry: int = 3600, db: AsyncSession = Depends(get_db)):
+@router.get("/product_download_urls/{payment_id}/{product_id}/{file_type}")
+async def get_product_download_urls(payment_id: str, product_id: str, file_type: str, expiry: int = 3600, db: AsyncSession = Depends(get_db)):
     order_status = await db.execute(select(Order).where(Order.payment_id == payment_id))
     order_status = order_status.scalars().first()
     print(order_status.status if order_status else "No order found")
@@ -329,7 +331,8 @@ async def get_product_download_urls(payment_id: str, file_type: str, expiry: int
         )
     item_id = await db.execute(select(OrderItem).where(OrderItem.order_id == order_status.id))
     item_id = item_id.scalars().first()
-    product_id = item_id.product_id
+    # print(item_id.product_id)
+    # product_id = item_id.product_id
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalars().first()
     if not product:
