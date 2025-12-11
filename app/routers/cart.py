@@ -72,15 +72,21 @@ async def add_items_to_cart(req : AddItemsSchema, db: AsyncSession = Depends(get
     for item in req.items:
         product = await db.execute(select(Product).where(Product.id == item.product_id))
         product_instance = product.scalars().first()
+        
         if not product_instance:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Product with ID {item.product_id} not found")
+        cart_item_in_db = await db.execute(select(CartItem).where(CartItem.cart_id == cart.user_id, CartItem.product_id == item.product_id, CartItem.machine_type == item.selected_format))
+        cart_item_in_db = cart_item_in_db.scalars().first()
+        if cart_item_in_db:
+            return {"message": f"Item with Product ID {item.product_id} and format {item.selected_format} already in cart"}
+            
         unit_price = product_instance.price
-        total_price = unit_price * 1
+        total_price = unit_price * item.quantity
         cart_item = CartItem(
             cart_id=cart.user_id,
             product_id=item.product_id,
             machine_type=item.selected_format,
-            quantity=1,
+            quantity=item.quantity,
             unit_price=item.unit_price,
             total_price=total_price
         )
