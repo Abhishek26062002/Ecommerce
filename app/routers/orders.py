@@ -91,6 +91,7 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
                 # })
                 detailed_items.append({
                     "order_id": item.order_id,
+                    "order_item_id": item.id,
                     "product_id": product.id,
                     "product_name": product.name,
                     "product_description": product.description,
