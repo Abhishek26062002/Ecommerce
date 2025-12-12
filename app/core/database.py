@@ -12,11 +12,10 @@ from sqlalchemy import text
 
 # Path to your SSL certificate (use raw string or escape properly)
 ssl_cert_path = "certificates/ca.pem"
-
 # Database URL
 DATABASE_URL = (
-    "postgresql+asyncpg://avnadmin:AVNS_JuL9m6-bfZ0APqPQP90@"
-    "pg-1a3fa1fb-ecom-1.b.aivencloud.com:23591/defaultdb"
+    "postgresql+asyncpg://avnadmin:AVNS_yz0YTDVQRPTcGkYB4qm@"
+    "pg-1057931-osaembroideryonline-6cc2.h.aivencloud.com:25436/defaultdb"
 )
 
 # ✅ Create SSL context
