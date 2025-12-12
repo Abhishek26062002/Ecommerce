@@ -13,6 +13,23 @@
             "driver": "PostgreSQL",
             "name": "ecommerce",
             "connectString": "postgres://avnadmin:AVNS_JuL9m6-bfZ0APqPQP90@pg-1a3fa1fb-ecom-1.b.aivencloud.com:23591/defaultdb?sslmode=require"
+        },
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": true,
+                    "ca": "certificates\\ca.pem"
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "sshOptions": {
+                "port": 22
+            },
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "ecommerce-1",
+            "connectString": "postgres://avnadmin:AVNS_yz0YTDVQRPTcGkYB4qm@pg-1057931-osaembroideryonline-6cc2.h.aivencloud.com:25436/defaultdb?sslmode=require"
         }
     ]
 }
