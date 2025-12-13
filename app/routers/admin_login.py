@@ -75,7 +75,7 @@ async def google_callback(request: Request, db : AsyncSession = Depends(get_db))
     details = await db.execute(select(Admin).where(Admin.email == user_info["email"]))
     details = details.scalars().first()
     response = {}
-    frontend_add = "http://localhost:5174" 
+    frontend_add = "https://osa-admin-nu.vercel.app"
     if details: 
         if details.email == user_info['email'] :
             response['email'] = details.email
