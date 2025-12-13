@@ -1,0 +1,1 @@
+insert into admin_details VALUES ('rakesh', 'salapu', 9685741230, 'salapurakesh865@gmail.com')

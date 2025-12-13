@@ -14,9 +14,12 @@ from sqlalchemy import text
 ssl_cert_path = "certificates/ca.pem"
 # Database URL
 DATABASE_URL = (
-    "postgresql+asyncpg://postgres:OSA%402025@"
-    "db.xiwlofuohlwgoocboikx.supabase.co:5432/postgres"
+    "postgresql+asyncpg://neondb_owner:npg_SCz1mvyf0bqp@"
+    "ep-cool-poetry-a14jd07k-pooler.ap-southeast-1.aws.neon.tech/"
+    "neondb"
+    # "?sslmode=require"
 )
+
 
 
 
@@ -26,8 +29,8 @@ DATABASE_URL = (
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    pool_size=5,
-    max_overflow=5,
+    pool_size=1,
+    max_overflow=0,
     pool_pre_ping=True,
 )
 
