@@ -14,24 +14,21 @@ from sqlalchemy import text
 ssl_cert_path = "certificates/ca.pem"
 # Database URL
 DATABASE_URL = (
-    "postgresql+asyncpg://avnadmin:AVNS_yz0YTDVQRPTcGkYB4qm@"
-    "pg-1057931-osaembroideryonline-6cc2.h.aivencloud.com:25436/defaultdb"
+    "postgresql+asyncpg://postgres:OSA@2025@"
+    "db.xiwlofuohlwgoocboikx.supabase.co:5432/postgres"
 )
 
 # ✅ Create SSL context
-ssl_context = ssl.create_default_context(cafile=ssl_cert_path)
+# ssl_context = ssl.create_default_context(cafile=ssl_cert_path)
 
-# ✅ Async engine with SSL
 engine = create_async_engine(
     DATABASE_URL,
-    echo=False,  # for debugging (set to False in production)
-    connect_args={"ssl": ssl_context},
-    pool_size=20,
+    echo=False,
+    pool_size=5,
+    max_overflow=5,
     pool_pre_ping=True,
-    max_overflow=20,
 )
 
-# ✅ Async session maker
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     expire_on_commit=False,
@@ -61,8 +58,3 @@ async def init_models():
         await conn.run_sync(Base.metadata.create_all)
 
 
-# If you want to test standalone:
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(init_models())
