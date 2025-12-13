@@ -14,9 +14,11 @@ from sqlalchemy import text
 ssl_cert_path = "certificates/ca.pem"
 # Database URL
 DATABASE_URL = (
-    "postgresql+asyncpg://postgres:OSA@2025@"
+    "postgresql+asyncpg://postgres:OSA%402025@"
     "db.xiwlofuohlwgoocboikx.supabase.co:5432/postgres"
 )
+
+
 
 # ✅ Create SSL context
 # ssl_context = ssl.create_default_context(cafile=ssl_cert_path)
