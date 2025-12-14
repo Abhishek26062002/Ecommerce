@@ -75,7 +75,7 @@ async def google_callback(request: Request, db : AsyncSession = Depends(get_db))
     details = await db.execute(select(Admin).where(Admin.email == user_info["email"]))
     details = details.scalars().first()
     response = {}
-    frontend_add = "http://localhost:5174" 
+    frontend_add = "https://osa-admin-nu.vercel.app"
     if details: 
         if details.email == user_info['email'] :
             response['email'] = details.email
@@ -89,7 +89,7 @@ async def google_callback(request: Request, db : AsyncSession = Depends(get_db))
         # response['message'] = "User Not an Admin"
         return RedirectResponse(url=f'{frontend_add}/loginerror')
     
-    # frontend_add = "https://ecommerce-frontend-steel-theta.vercel.app"
+    frontend_add = "https://osa-admin-nu.vercel.app"
     frontend_url = f'{frontend_add}/callback?token=scheduler&email={response["email"]}&name={response["full_name"]}&id={response["id"]}&message={response["message"]}'
     return RedirectResponse(frontend_url)
 
