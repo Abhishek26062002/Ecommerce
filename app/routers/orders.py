@@ -110,7 +110,8 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
         return detailed_items
     except Exception as e:
         print(f"Error fetching orders: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # raise HTTPException(status_code=500, detail=str(e))
+        pass
 
 
 @router.get("/order_history/{user_id}")

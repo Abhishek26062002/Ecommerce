@@ -194,12 +194,10 @@ async def generate_r2_url(product_id: str, expiry: int = 3600, db: AsyncSession 
         )
     
     urls = {}
-    if product.dst:
-        dst_url = await generate_r2_download_url(product.dst, expiry)
-        urls['dst_url'] = dst_url
-    if product.jef:
-        jef_url = await generate_r2_download_url(product.jef, expiry)
-        urls['jef_url'] = jef_url
+    for file_type, file_url in json.loads(product.downloadable_files).items():
+        if file_type == 'embroidery_dst':
+            download_url = await generate_r2_download_url(file_url, expiry)
+            urls[f'{file_type}_url'] = download_url
     
     return urls
 
