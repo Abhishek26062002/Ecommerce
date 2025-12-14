@@ -80,28 +80,32 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
             items = [item for item in order_items if item.order_id == order.id]
             
             for item in items:
-                product_result = await db.execute(
-                    select(Product).where(Product.id == item.product_id)
-                )
-                product = product_result.scalars().first()
-                print("True")
-                # detailed_items.append({
-                #     "order_item": item,
-                #     "product": product
-                # })
-                detailed_items.append({
-                    "order_id": item.order_id,
-                    "order_item_id": item.id,
-                    "product_id": product.id,
-                    "product_name": product.name,
-                    "product_description": product.description,
-                    "selected_type": item.machine_type,
-                    "quantity": item.quantity,
-                    "price": product.discount_price if product.discount_price else item.price,
-                    "images": product.images_urls, 
-                    "category": product.category,
-                    "payment_id": order.payment_id
-                })
+                try :
+                    product_result = await db.execute(
+                        select(Product).where(Product.id == item.product_id)
+                    )
+                    product = product_result.scalars().first()
+                    print("True")
+                    # detailed_items.append({
+                    #     "order_item": item,
+                    #     "product": product
+                    # })
+                    detailed_items.append({
+                        "order_id": item.order_id,
+                        "order_item_id": item.id,
+                        "product_id": product.id,
+                        "product_name": product.name,
+                        "product_description": product.description,
+                        "selected_type": item.machine_type,
+                        "quantity": item.quantity,
+                        "price": product.discount_price if product.discount_price else item.price,
+                        "images": product.images_urls, 
+                        "category": product.category,
+                        "payment_id": order.payment_id
+                    })
+                except Exception as e:
+                    print(f"Error fetching product details: {e}")
+                    pass
             # orders_items_with_product_details.append({
             #     "order": order,
             #     "items": detailed_items
