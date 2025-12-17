@@ -64,7 +64,7 @@ async def create_order(payload: OrderCreateSchema, db: AsyncSession = Depends(ge
 async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(
-            select(Order).where(Order.user_id == user_id, Order.status == "paid")
+            select(Order).where(Order.user_id == user_id, Order.status == "paid").order_by(Order.created_at.desc())
         )
         orders = result.scalars().all()
         print("orders", orders)
@@ -121,7 +121,7 @@ async def get_orders(user_id: str, db: AsyncSession = Depends(get_db)):
 async def order_history(user_id: str, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(
-            select(Order).where(Order.user_id == user_id)
+            select(Order).where(Order.user_id == user_id).order_by(Order.created_at.desc())
         )
         orders = result.scalars().all()
         return orders
