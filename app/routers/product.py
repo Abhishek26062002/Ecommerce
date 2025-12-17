@@ -7,7 +7,7 @@ from app.models.product import Product
 from sqlalchemy.future import select
 from typing import List, Optional, Union
 from app.services.cloudinary import upload_file_to_cloudinary
-from app.services.r2_client import upload_to_r2, generate_r2_download_url, delete_from_r2
+from app.services.r2_client import upload_to_r2, generate_r2_download_url, delete_from_r2, upload_image_to_r2
 from app.models.orderitems import OrderItem
 from app.models.orders import Order
 import json
@@ -109,9 +109,9 @@ async def add_product(request: Request,
         # Upload images first
     images_urls = []
     for image in images:
-        upload_result = await upload_file_to_cloudinary(image)
+        upload_result = await upload_image_to_r2(image)
         if upload_result:
-            images_urls.append(upload_result["secure_url"])
+            images_urls.append(upload_result)
     form = await request.form()
     print("Form items:", list(form.items()))
 
@@ -271,8 +271,8 @@ async def update_product(request: Request,
             upload_result = await upload_file_to_cloudinary(image)
             print(f"Upload result: {upload_result}")
             if upload_result:
-                print(f"Uploaded image URL: {upload_result['secure_url']}")
-                images_urls.append(upload_result["secure_url"])
+                print(f"Uploaded image URL: {upload_result}")
+                images_urls.append(upload_result)
         product.images_urls = images_urls
     else :
         if image_urls is not None:
