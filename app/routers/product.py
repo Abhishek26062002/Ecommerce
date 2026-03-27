@@ -268,7 +268,7 @@ async def update_product(request: Request,
         images_urls = image_urls if image_urls is not None else []
         for image in images:
             print("Uploading image to Cloudinary")
-            upload_result = await upload_file_to_cloudinary(image)
+            upload_result = await upload_image_to_r2(image)
             print(f"Upload result: {upload_result}")
             if upload_result:
                 print(f"Uploaded image URL: {upload_result}")
